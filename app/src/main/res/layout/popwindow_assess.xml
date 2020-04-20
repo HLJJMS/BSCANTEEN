@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="10dp"
+    android:orientation="vertical"    android:background="@color/white"
+    android:layout_gravity="center_horizontal"
+    android:layout_height="wrap_content">
+    <RatingBar
+        android:id="@+id/mRatingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="0.5"
+        tools:ignore="MissingConstraints" />
+    <EditText
+        android:layout_marginTop="10dp"
+        android:id="@+id/et_txt"
+        android:background="@drawable/edit_back"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"/>
+
+    <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+        android:layout_width="match_parent"
+        android:padding="10dp"
+        android:id="@+id/saveMessage"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/white"
+        app:qmui_backgroundColor="@color/yellow"
+        android:text="提交"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
