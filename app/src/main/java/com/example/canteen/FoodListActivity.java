@@ -25,9 +25,7 @@ public class FoodListActivity extends AppCompatActivity {
     QMUIRoundButton add;
     View view;
     PopupWindow popupWindow;
-
     EditText name;
-
     EditText rmd;
     QMUIRoundButton save;
 
