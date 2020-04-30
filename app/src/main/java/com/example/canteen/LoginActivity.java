@@ -1,9 +1,10 @@
 package com.example.canteen;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.CalendarContract;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -14,10 +15,19 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.example.canteen.bean.LoginBean;
+import com.google.gson.Gson;
 import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
+
+import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.FormBody;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -46,6 +56,8 @@ public class LoginActivity extends AppCompatActivity {
     SharedPreferences sp = getSharedPreferences("Logindb", MODE_PRIVATE);
     SharedPreferences.Editor editor = sp.edit();
     boolean isLogin = true;
+    String tel, pws, status;
+    Context context;
     int type = 0;
 
     @Override
@@ -53,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+        context = this;
         editor.putBoolean("save", false);
         editor.commit();
         login.setOnClickListener(new View.OnClickListener() {
@@ -62,24 +75,21 @@ public class LoginActivity extends AppCompatActivity {
                     if (username.getText().equals("") || password.getText().equals("")) {
                         Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
                     } else {
-                        editor.putString("user", username.getText().toString());
-                        editor.putString("password", password.getText().toString());
-                        editor.putBoolean("save", true);
-                        editor.commit();
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+                        pws = password.getText().toString();
+                        tel = username.getText().toString();
+                        LoginGet loginGet = new LoginGet();
+                        loginGet.execute();
+
                     }
                 } else {
                     //注册
                     if (username.getText().equals("") || password.getText().equals("")) {
                         Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
                     } else {
-                        editor.putString("user", username.getText().toString());
-                        editor.putString("password", password.getText().toString());
-                        editor.putBoolean("save", true);
-                        editor.commit();
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+                        pws = password.getText().toString();
+                        tel = username.getText().toString();
+                        RegisteGet registeGet = new RegisteGet();
+                        registeGet.execute();
                     }
                 }
             }
@@ -149,6 +159,7 @@ public class LoginActivity extends AppCompatActivity {
                 studen.setBackgroundResource(R.drawable.edit_back_solid);
                 teacher.setBackgroundResource(R.drawable.edit_back);
                 cooker.setBackgroundResource(R.drawable.edit_back);
+                status = Api.STUDENT;
                 break;
             case 1:
                 studen.setTextColor(txtFalse);
@@ -157,6 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                 studen.setBackgroundResource(R.drawable.edit_back);
                 teacher.setBackgroundResource(R.drawable.edit_back_solid);
                 cooker.setBackgroundResource(R.drawable.edit_back);
+                status = Api.TEACHER;
                 break;
             case 2:
                 studen.setTextColor(txtFalse);
@@ -165,12 +177,95 @@ public class LoginActivity extends AppCompatActivity {
                 studen.setBackgroundResource(R.drawable.edit_back);
                 teacher.setBackgroundResource(R.drawable.edit_back);
                 cooker.setBackgroundResource(R.drawable.edit_back_solid);
+                status = Api.COOKER;
                 break;
+        }
+    }
+
+
+    class LoginGet extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String s = "";
+            OkHttpClient okHttpClient = new OkHttpClient();
+
+            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
+            urlBuilder.addFormDataPart("tel", tel);
+            urlBuilder.addFormDataPart("pws", pws);
+            Request request = new Request.Builder().url(Api.BASEURL + Api.LOGIN).post(urlBuilder.build()).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            LoginBean bean = new Gson().fromJson(s, LoginBean.class);
+            editor.putString("user", username.getText().toString());
+            editor.putString("password", password.getText().toString());
+            editor.putString("token", bean.getToken());
+            editor.putString("type", bean.getStatus());
+            Api.TOKEN = bean.getToken();
+            Api.TYPE = bean.getStatus();
+            editor.putBoolean("save", true);
+            editor.commit();
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
+    }
+
+
+    class RegisteGet extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String s = "";
+            OkHttpClient okHttpClient = new OkHttpClient();
+
+            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
+            urlBuilder.addFormDataPart("tel", tel);
+            urlBuilder.addFormDataPart("pws", pws);
+            urlBuilder.addFormDataPart("status", status);
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE).post(urlBuilder.build()).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            switch (s) {
+                case "success":
+                    isLogin = true;
+                    llType.setVisibility(View.GONE);
+                    tvType.setText("注册");
+                    username.setText("");
+                    password.setText("");
+                    Toast.makeText(context, "成功，请重新登录", Toast.LENGTH_LONG).show();
+                    break;
+                case "fail":
+                    Toast.makeText(context, " 注册失败", Toast.LENGTH_LONG).show();
+                    break;
+                case "exist":
+                    Toast.makeText(context, "账号存在", Toast.LENGTH_LONG).show();
+                    break;
+                case "update":
+                    Toast.makeText(context, "update ", Toast.LENGTH_LONG).show();
+                    break;
+            }
 
 
         }
-
-
     }
-
 }
