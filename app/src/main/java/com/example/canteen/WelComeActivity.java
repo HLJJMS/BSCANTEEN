@@ -13,13 +13,13 @@ public class WelComeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wel_come);
         SharedPreferences sp = getSharedPreferences("Logindb", MODE_PRIVATE);
-
-        if(sp.getBoolean("save",false)){
+        if(sp.getString("type","").equals("")||sp.getString("token","").equals("")){
            startActivity(new Intent(this,LoginActivity.class));
         }else{
             Api.TYPE = sp.getString("type","");
             Api.TOKEN = sp.getString("token","");
             startActivity(new Intent(this,MainActivity.class));
         }
+        finish();
     }
 }

@@ -21,6 +21,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemChildClickListener;
+import com.chad.library.adapter.base.listener.OnItemClickListener;
+import com.chad.library.adapter.base.listener.OnItemLongClickListener;
 import com.example.canteen.adapter.CommentAdapter;
 import com.example.canteen.bean.CommentBean;
 import com.google.gson.Gson;
@@ -51,7 +53,7 @@ public class CommentActivity extends AppCompatActivity {
     QMUIRoundButton btSave;
     EditText etComment;
     PopupWindow popupWindowComment;
-    CommentAdapter commentAdapter = new CommentAdapter(R.layout.item_comment);
+    CommentAdapter commentAdapter = new CommentAdapter(new ArrayList<>());
     String id;
     Context context;
 
@@ -62,6 +64,7 @@ public class CommentActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         context = this;
         id = getIntent().getStringExtra("id");
+        title.setText(getIntent().getStringExtra("name"));
         setPopComment();
         setRecyclerView();
         GetList getList = new GetList();
@@ -71,13 +74,24 @@ public class CommentActivity extends AppCompatActivity {
     private void setRecyclerView() {
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(commentAdapter);
-        commentAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
+        commentAdapter.setOnItemLongClickListener(new OnItemLongClickListener() {
             @Override
-            public void onItemChildClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
-                if (view.getId() == R.id.del) {
+            public boolean onItemLongClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
+                if (commentAdapter.getData().get(position).getItemType() == 1) {
                     DelComment delComment = new DelComment(commentAdapter.getData().get(position).getId(), position);
                     delComment.execute();
+                } else {
+                    DelReply delReply = new DelReply(commentAdapter.getData().get(position).getId(), position);
+                    delReply.execute();
                 }
+                return false;
+            }
+        });
+
+        commentAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(@NonNull BaseQuickAdapter<?, ?> adapter, @NonNull View view, int position) {
+                showPopComment(false,commentAdapter.getData().get(position).getId());
             }
         });
 
@@ -96,16 +110,6 @@ public class CommentActivity extends AppCompatActivity {
         ratingBar = viewComment.findViewById(R.id.mRatingBar);
         etComment = viewComment.findViewById(R.id.et_txt);
         btSave = viewComment.findViewById(R.id.saveMessage);
-        btSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Date date = new Date(System.currentTimeMillis());
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
-                SaveComment saveComment = new SaveComment(etComment.getText().toString(), simpleDateFormat.format(date));
-                saveComment.execute();
-                popupWindowComment.dismiss();
-            }
-        });
         popupWindowComment.setTouchable(true);
 
         popupWindowComment.setOnDismissListener(new PopupWindow.OnDismissListener() {
@@ -119,7 +123,24 @@ public class CommentActivity extends AppCompatActivity {
     }
 
 
-    private void showPopComment() {
+    private void showPopComment(boolean isComment,String id) {
+        btSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                if (!isComment) {
+                    SaveReply saveReply = new SaveReply(etComment.getText().toString(), simpleDateFormat.format(date),id);
+                    saveReply.execute();
+                } else {
+                    SaveComment saveComment = new SaveComment(etComment.getText().toString(), simpleDateFormat.format(date));
+                    saveComment.execute();
+                }
+                popupWindowComment.dismiss();
+            }
+        });
+
+
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.alpha = 0.5f;
         getWindow().setAttributes(lp);
@@ -128,7 +149,7 @@ public class CommentActivity extends AppCompatActivity {
 
     @OnClick(R.id.add_item)
     public void onViewClicked() {
-        showPopComment();
+        showPopComment(true,"");
     }
 
 
@@ -158,8 +179,7 @@ public class CommentActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             CommentBean bean = new Gson().fromJson(s, CommentBean.class);
-            commentAdapter.setNewData(new ArrayList<CommentBean.ListBean>());
-            commentAdapter.addData(bean.getList());
+            commentAdapter.setNewData(bean.getList());
         }
     }
 
@@ -176,15 +196,9 @@ public class CommentActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Void... voids) {
 
-            String s = "";
+            String s = "", url = Api.BASEURL + Api.COMMENTSAVE + "?foodId=" + id + "&userId=" + Api.TOKEN + "&valuation=" + txt + "&valuationDate=" + valuationDate;
             OkHttpClient okHttpClient = new OkHttpClient();
-
-            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.addFormDataPart("foodId", id);
-            urlBuilder.addFormDataPart("userId", Api.TOKEN);
-            urlBuilder.addFormDataPart("valuation", txt);
-            urlBuilder.addFormDataPart("valuation", valuationDate);
-            Request request = new Request.Builder().url(Api.BASEURL + Api.COMMENTLIST).post(urlBuilder.build()).build();
+            Request request = new Request.Builder().url(url).build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -197,9 +211,14 @@ public class CommentActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            CommentBean bean = new Gson().fromJson(s, CommentBean.class);
-            commentAdapter.setNewData(new ArrayList<CommentBean.ListBean>());
-            commentAdapter.addData(bean.getList());
+            if (s.equals("insertSuccess")) {
+                GetList getList = new GetList();
+                getList.execute();
+                Toast.makeText(context, "评论成功", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "评论失败", Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 
@@ -217,7 +236,6 @@ public class CommentActivity extends AppCompatActivity {
 
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
-
             MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
             urlBuilder.addFormDataPart("id", commnetId);
             Request request = new Request.Builder().url(Api.BASEURL + Api.COMMENTDEL).post(urlBuilder.build()).build();
@@ -239,6 +257,85 @@ public class CommentActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(context, "删除失败", Toast.LENGTH_LONG).show();
             }
+        }
+    }
+
+
+    class DelReply extends AsyncTask<Void, Void, String> {
+        String commnetId;
+        int position;
+
+        public DelReply(String commnetId, int position) {
+            this.commnetId = commnetId;
+            this.position = position;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+
+            String s = "";
+            OkHttpClient okHttpClient = new OkHttpClient();
+
+            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
+            urlBuilder.addFormDataPart("id", commnetId);
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REPLYDEL).post(urlBuilder.build()).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            if (s.equals(Api.SUCCESS)) {
+                Toast.makeText(context, "删除成功", Toast.LENGTH_LONG).show();
+                commentAdapter.remove(position);
+            } else {
+                Toast.makeText(context, "删除失败", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    class SaveReply extends AsyncTask<Void, Void, String> {
+        String txt;
+        String valuationDate;
+        String valuationId ;
+        public SaveReply(String txt, String valuationDate,String valuationId) {
+            this.txt = txt;
+            this.valuationDate = valuationDate;
+            this.valuationId=valuationId;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+
+            String s = "", url = Api.BASEURL + Api.REPLYSAVE + "?foodId=" + id + "&userId=" + Api.TOKEN + "&replyContent=" + txt + "&replyDate=" + valuationDate+"&valuationId="+valuationId;
+            OkHttpClient okHttpClient = new OkHttpClient();
+            Request request = new Request.Builder().url(url).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            if (s.equals("insertSuccess")) {
+                GetList getList = new GetList();
+                getList.execute();
+                Toast.makeText(context, "评论成功", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "评论失败", Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 }

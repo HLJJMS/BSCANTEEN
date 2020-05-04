@@ -19,7 +19,7 @@
             android:background="@drawable/side_nav_bar"
             android:gravity="center"
             android:padding="15dp"
-            android:text="学生第四食堂"
+            android:text="一食堂"
             android:textColor="@color/white"
             android:textSize="16sp"
             tools:ignore="MissingConstraints" />
@@ -28,6 +28,7 @@
             android:id="@+id/add_item"
             android:textColor="@color/white"
             android:textSize="30sp"
+            android:visibility="gone"
             android:text="✚"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/title"
@@ -39,8 +40,10 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
+            app:layout_constraintTop_toBottomOf="@id/title"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="0dp"
             tools:ignore="MissingConstraints" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -101,6 +104,16 @@
                 app:layout_goneMarginTop="10dp" />
 
             <TextView
+                android:id="@+id/bt_edit_pwd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:paddingStart="20dp"
+                android:text="修改密码"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintTop_toBottomOf="@id/recycler_left" />
+            <TextView
                 android:id="@+id/tv_look_rmb"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -109,7 +122,7 @@
                 android:text="查看菜价"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@id/recycler_left" />
+                app:layout_constraintTop_toBottomOf="@id/bt_edit_pwd" />
 
             <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
                 android:id="@+id/tv_exit"

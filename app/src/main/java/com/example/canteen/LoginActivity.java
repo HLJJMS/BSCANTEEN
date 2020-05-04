@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -23,7 +24,9 @@ import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.FormBody;
+import butterknife.OnClick;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -53,8 +56,8 @@ public class LoginActivity extends AppCompatActivity {
     ProgressBar loading;
     @BindView(R.id.container)
     ConstraintLayout container;
-    SharedPreferences sp = getSharedPreferences("Logindb", MODE_PRIVATE);
-    SharedPreferences.Editor editor = sp.edit();
+    SharedPreferences sp;
+    SharedPreferences.Editor editor;
     boolean isLogin = true;
     String tel, pws, status;
     Context context;
@@ -65,72 +68,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+        sp = getSharedPreferences("Logindb", MODE_PRIVATE);
+        editor = sp.edit();
         context = this;
         editor.putBoolean("save", false);
         editor.commit();
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isLogin) {
-                    if (username.getText().equals("") || password.getText().equals("")) {
-                        Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
-                    } else {
-                        pws = password.getText().toString();
-                        tel = username.getText().toString();
-                        LoginGet loginGet = new LoginGet();
-                        loginGet.execute();
-
-                    }
-                } else {
-                    //注册
-                    if (username.getText().equals("") || password.getText().equals("")) {
-                        Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
-                    } else {
-                        pws = password.getText().toString();
-                        tel = username.getText().toString();
-                        RegisteGet registeGet = new RegisteGet();
-                        registeGet.execute();
-                    }
-                }
-            }
-        });
-        tvType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isLogin) {
-                    isLogin = false;
-                    tvType.setText("登录");
-                    llType.setVisibility(View.VISIBLE);
-                } else {
-                    isLogin = true;
-                    llType.setVisibility(View.GONE);
-                    tvType.setText("注册");
-                }
-            }
-        });
-
-        studen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                type = 0;
-                setRadio();
-            }
-        });
-        teacher.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                type = 1;
-                setRadio();
-            }
-        });
-        cooker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                type = 2;
-                setRadio();
-            }
-        });
-
 
     }
 
@@ -182,18 +124,71 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @OnClick({R.id.login, R.id.studen, R.id.teacher, R.id.cooker, R.id.ll_type, R.id.tv_type})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.login:
+                if (isLogin) {
+                    if (username.getText().equals("") || password.getText().equals("")) {
+                        Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
+                    } else {
+                        pws = password.getText().toString();
+                        tel = username.getText().toString();
+                        LoginGet loginGet = new LoginGet();
+                        loginGet.execute();
+
+                    }
+                } else {
+                    //注册
+                    if (username.getText().equals("") || password.getText().equals("")) {
+                        Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
+                    } else {
+                        pws = password.getText().toString();
+                        tel = username.getText().toString();
+                        RegisteGet registeGet = new RegisteGet();
+                        registeGet.execute();
+                    }
+                }
+                break;
+            case R.id.studen:
+                type = 0;
+                setRadio();
+                break;
+            case R.id.teacher:
+                type = 1;
+                setRadio();
+                break;
+            case R.id.cooker:
+                type = 2;
+                setRadio();
+                break;
+            case R.id.ll_type:
+                break;
+            case R.id.tv_type:
+                if (isLogin) {
+                    isLogin = false;
+                    tvType.setText("登录");
+                    llType.setVisibility(View.VISIBLE);
+                    password.setHint("请输入名字");
+                } else {
+                    isLogin = true;
+                    llType.setVisibility(View.GONE);
+                    tvType.setText("注册");
+                    password.setHint("请输入密码");
+                }
+                break;
+        }
+    }
+
 
     class LoginGet extends AsyncTask<Void, Void, String> {
 
         @Override
         protected String doInBackground(Void... voids) {
-            String s = "";
+            String s = "",url=Api.BASEURL + Api.LOGIN+"?tel="+tel+"&pwd="+pws;
             OkHttpClient okHttpClient = new OkHttpClient();
-
-            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.addFormDataPart("tel", tel);
-            urlBuilder.addFormDataPart("pws", pws);
-            Request request = new Request.Builder().url(Api.BASEURL + Api.LOGIN).post(urlBuilder.build()).build();
+            Request request = new Request.Builder().url(url).build();
+            Log.e("结果",url);
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -206,17 +201,22 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            LoginBean bean = new Gson().fromJson(s, LoginBean.class);
-            editor.putString("user", username.getText().toString());
-            editor.putString("password", password.getText().toString());
-            editor.putString("token", bean.getToken());
-            editor.putString("type", bean.getStatus());
-            Api.TOKEN = bean.getToken();
-            Api.TYPE = bean.getStatus();
-            editor.putBoolean("save", true);
-            editor.commit();
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
+            if(!s.equals("")){
+                LoginBean bean = new Gson().fromJson(s, LoginBean.class);
+                editor.putString("user", username.getText().toString());
+                editor.putString("password", password.getText().toString());
+                editor.putString("token", bean.getId());
+                editor.putString("type", bean.getStatus());
+                Api.TOKEN = bean.getId();
+                Api.TYPE = bean.getStatus();
+                editor.putBoolean("save", true);
+                editor.commit();
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }else{
+                Toast.makeText(context,"账号密码错误",Toast.LENGTH_LONG).show();
+            }
+
         }
     }
 
@@ -227,12 +227,8 @@ public class LoginActivity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
-
-            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.addFormDataPart("tel", tel);
-            urlBuilder.addFormDataPart("pws", pws);
-            urlBuilder.addFormDataPart("status", status);
-            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE).post(urlBuilder.build()).build();
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE+"?tel="+tel+"&pwd="+pws+"&status="+status).build();
+            Log.e("url" ,Api.BASEURL + Api.REGISTE+"?tel="+tel+"&name="+pws+"&status="+status );
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();

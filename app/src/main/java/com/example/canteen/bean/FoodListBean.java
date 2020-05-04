@@ -231,6 +231,15 @@ public class FoodListBean {
         private String delFlag;
         private String userName;
         private Object status;
+        private String grade;
+
+        public String getGrade() {
+            return grade;
+        }
+
+        public void setGrade(String grade) {
+            this.grade = grade;
+        }
 
         public String getId() {
             return id;

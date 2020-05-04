@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +32,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemChildClickListener;
+import com.chad.library.adapter.base.listener.OnItemClickListener;
+import com.chad.library.adapter.base.listener.OnItemLongClickListener;
 import com.example.canteen.adapter.FoodAdapter;
 import com.example.canteen.bean.FoodListBean;
-import com.example.canteen.bean.HomeListBean;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 import com.tbruyelle.rxpermissions2.RxPermissions;
@@ -41,11 +44,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -62,12 +64,16 @@ public class FoodListActivity extends AppCompatActivity {
     TextView foodName;
     EditText name;
     EditText rmd;
-    QMUIRoundButton save;
-    View viewFood;
-    PopupWindow popupWindowFood;
+    QMUIRoundButton save, dfok;
+    RatingBar ratingBar;
+    View viewFood, dfView;
+    PopupWindow popupWindowFood, dfPopupwindow;
     FoodAdapter foodAdapter = new FoodAdapter(R.layout.item_food_list);
     Context context;
     Uri uri;
+    @BindView(R.id.title)
+    TextView title;
+    String id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +81,15 @@ public class FoodListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_foodlist);
         ButterKnife.bind(this);
         context = this;
+        title.setText(getIntent().getStringExtra("name"));
+        id = getIntent().getStringExtra("id");
+        if (id.equals(Api.TOKEN)) {
+            add.setVisibility(View.VISIBLE);
+        } else {
+            add.setVisibility(View.GONE);
+        }
         setPopFood();
+        setDFPopWindow();
         setFoodAdapter();
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,20 +104,27 @@ public class FoodListActivity extends AppCompatActivity {
     private void setFoodAdapter() {
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(foodAdapter);
-        foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
+        foodAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemChildClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
-                if (view.getId() == R.id.del) {
-                    FoodDel foodDel = new FoodDel(foodAdapter.getData().get(position).getId(), position);
-                    foodDel.execute();
-                } else {
-                    Intent intent = new Intent(FoodListActivity.this, CommentActivity.class);
-                    intent.putExtra("id", foodAdapter.getData().get(position).getId());
-                    startActivity(intent);
-
-                }
+            public void onItemClick(@NonNull BaseQuickAdapter<?, ?> adapter, @NonNull View view, int position) {
+                Intent intent = new Intent(FoodListActivity.this, CommentActivity.class);
+                intent.putExtra("id", foodAdapter.getData().get(position).getId());
+                startActivity(intent);
             }
         });
+        foodAdapter.addChildClickViewIds(R.id.del,R.id.tv_df);
+foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
+    @Override
+    public void onItemChildClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
+        if(view.getId()==R.id.tv_df){
+            showPopDF(foodAdapter.getData().get(position).getId().toString());
+        }else if (view.getId()==R.id.del){
+            FoodDel foodDel = new FoodDel(foodAdapter.getData().get(position).getId(), position);
+            foodDel.execute();
+
+        }
+    }
+});
 
 
     }
@@ -129,8 +150,8 @@ public class FoodListActivity extends AppCompatActivity {
                 if (foodName.getText().equals("") || rmd.getText().equals("")) {
                     Toast.makeText(FoodListActivity.this, "数据错误", Toast.LENGTH_LONG).show();
                 } else {
-                    FoodSave foodSave = new FoodSave(new File(getFilePathForN(context, uri)), foodName.getText().toString(), rmd.getText().toString());
-                    foodSave.execute();
+                    UpLoad upLoad = new UpLoad(new File(getFilePathForN(context, uri)), foodName.getText().toString(), rmd.getText().toString());
+                    upLoad.execute();
                 }
             }
         });
@@ -160,6 +181,44 @@ public class FoodListActivity extends AppCompatActivity {
         popupWindowFood.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
     }
 
+    private void setDFPopWindow() {
+        dfView = LayoutInflater.from(context).inflate(R.layout.pop_dafen, null);
+        dfPopupwindow = new PopupWindow();
+        dfPopupwindow.setWidth(LinearLayout.LayoutParams.MATCH_PARENT);
+        dfPopupwindow.setHeight(LinearLayout.LayoutParams.WRAP_CONTENT);
+        dfPopupwindow.setContentView(dfView);
+        dfPopupwindow.setTouchable(true);
+        dfPopupwindow.setOutsideTouchable(true);
+        dfPopupwindow.setFocusable(true); //点击返回键取消
+        dfPopupwindow.setBackgroundDrawable(new BitmapDrawable());
+        dfok = dfView.findViewById(R.id.saveMessage);
+        ratingBar = dfView.findViewById(R.id.mRatingBar);
+
+        dfPopupwindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.alpha = 1f;
+                getWindow().setAttributes(lp);
+            }
+        });
+    }
+
+    private void showPopDF(String id) {
+        dfok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ratingBar.getNumStars();
+                Log.e("xingxing星星", String.valueOf(ratingBar.getRating()));
+                DFnet dFnet = new DFnet(id, String.valueOf(ratingBar.getRating()));
+                dFnet.execute();
+            }
+        });
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.alpha = 0.5f;
+        getWindow().setAttributes(lp);
+        dfPopupwindow.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+    }
 
     private void getPermissions() {
         RxPermissions rxPermissions = new RxPermissions(this);
@@ -230,19 +289,15 @@ public class FoodListActivity extends AppCompatActivity {
     }
 
 
+
     class GetList extends AsyncTask<Void, Void, String> {
 
         @Override
         protected String doInBackground(Void... voids) {
 
-            String s = "";
+            String s = "", url = Api.BASEURL + Api.GETFOOD + "?userId=" + id + "&pageIndex=" + "1" + "&pageSize=" + "100";
             OkHttpClient okHttpClient = new OkHttpClient();
-
-            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.addFormDataPart("userId", Api.TOKEN);
-            urlBuilder.addFormDataPart("pageIndex", "1");
-            urlBuilder.addFormDataPart("pageSize", "100");
-            Request request = new Request.Builder().url(Api.BASEURL + Api.GETFOOD).post(urlBuilder.build()).build();
+            Request request = new Request.Builder().url(url).build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -256,8 +311,8 @@ public class FoodListActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             FoodListBean bean = new Gson().fromJson(s, FoodListBean.class);
-            foodAdapter.setNewData(new ArrayList<FoodListBean.ListBean>());
-            foodAdapter.addData(bean.getList());
+//            foodAdapter.setNewData(new ArrayList<FoodListBean.ListBean>());
+            foodAdapter.setNewData(bean.getList());
         }
     }
 
@@ -304,12 +359,12 @@ public class FoodListActivity extends AppCompatActivity {
 
 
     class FoodSave extends AsyncTask<Void, Void, String> {
-        File file;
-        String foodName, foodPrice;
 
-        public FoodSave(File file, String foodName, String foodPrice) {
-            this.file = file;
+        String foodName, foodPrice, fileName;
+
+        public FoodSave(String fileName, String foodName, String foodPrice) {
             this.foodName = foodName;
+            this.fileName = fileName;
             this.foodPrice = foodPrice;
         }
 
@@ -318,10 +373,9 @@ public class FoodListActivity extends AppCompatActivity {
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
             MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.setType(MultipartBody.FORM);
             urlBuilder.addFormDataPart("foodName", foodName);
             urlBuilder.addFormDataPart("foodPrice", foodPrice);
-            urlBuilder.addFormDataPart("foodImg", file.getName());
+            urlBuilder.addFormDataPart("foodImg", Api.UPLOAD + fileName);
             urlBuilder.addFormDataPart("userId", Api.TOKEN);
 
             Request request = new Request.Builder().url(Api.BASEURL + Api.FOODSAVE).post(urlBuilder.build()).build();
@@ -345,6 +399,77 @@ public class FoodListActivity extends AppCompatActivity {
                 Toast.makeText(context, "保存失败", Toast.LENGTH_LONG).show();
             }
 
+        }
+    }
+
+
+    class UpLoad extends AsyncTask<Void, Void, String> {
+        File file;
+        String foodName, foodPrice;
+
+        public UpLoad(File file, String foodName, String foodPrice) {
+            this.file = file;
+            this.foodName = foodName;
+            this.foodPrice = foodPrice;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String s = "";
+            OkHttpClient okHttpClient = new OkHttpClient();
+            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
+            urlBuilder.setType(MultipartBody.FORM);
+            urlBuilder.addFormDataPart("foodImg", file.getName());
+            Request request = new Request.Builder().url(Api.BASEURL + Api.UPLOAD).post(urlBuilder.build()).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            FoodSave foodSave = new FoodSave(file.getName(), foodName, rmd.getText().toString());
+            foodSave.execute();
+        }
+    }
+
+
+
+    class DFnet extends AsyncTask<Void, Void, String> {
+        String id, grade;
+
+        public DFnet(String id, String grade) {
+            this.id = id;
+            this.grade = grade;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String s = "", url = Api.BASEURL + Api.GRADESAVE + "?foodId=" + id + "&grade=" + grade + "&userId=" + Api.TOKEN;
+            OkHttpClient okHttpClient = new OkHttpClient();
+            Request request = new Request.Builder().url(url).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+                s = response.body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return s;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            if (s.equals("insertSuccess")) {
+                Toast.makeText(context, "成功", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "失败", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

@@ -27,96 +27,96 @@ public class HomeListBean {
      * firstPage : 1
      */
 
-    private int pageNum;
-    private int pageSize;
-    private int size;
-    private int startRow;
-    private int endRow;
-    private int total;
-    private int pages;
-    private int prePage;
-    private int nextPage;
+    private String pageNum;
+    private String pageSize;
+    private String size;
+    private String startRow;
+    private String endRow;
+    private String total;
+    private String pages;
+    private String prePage;
+    private String nextPage;
     private boolean isFirstPage;
     private boolean isLastPage;
     private boolean hasPreviousPage;
     private boolean hasNextPage;
-    private int navigatePages;
-    private int navigateFirstPage;
-    private int navigateLastPage;
-    private int lastPage;
-    private int firstPage;
+    private String navigatePages;
+    private String navigateFirstPage;
+    private String navigateLastPage;
+    private String lastPage;
+    private String firstPage;
     private List<ListBean> list;
     private List<Integer> navigatepageNums;
 
-    public int getPageNum() {
+    public String getPageNum() {
         return pageNum;
     }
 
-    public void setPageNum(int pageNum) {
+    public void setPageNum(String pageNum) {
         this.pageNum = pageNum;
     }
 
-    public int getPageSize() {
+    public String getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(int pageSize) {
+    public void setPageSize(String pageSize) {
         this.pageSize = pageSize;
     }
 
-    public int getSize() {
+    public String getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(String size) {
         this.size = size;
     }
 
-    public int getStartRow() {
+    public String getStartRow() {
         return startRow;
     }
 
-    public void setStartRow(int startRow) {
+    public void setStartRow(String startRow) {
         this.startRow = startRow;
     }
 
-    public int getEndRow() {
+    public String getEndRow() {
         return endRow;
     }
 
-    public void setEndRow(int endRow) {
+    public void setEndRow(String endRow) {
         this.endRow = endRow;
     }
 
-    public int getTotal() {
+    public String getTotal() {
         return total;
     }
 
-    public void setTotal(int total) {
+    public void setTotal(String total) {
         this.total = total;
     }
 
-    public int getPages() {
+    public String getPages() {
         return pages;
     }
 
-    public void setPages(int pages) {
+    public void setPages(String pages) {
         this.pages = pages;
     }
 
-    public int getPrePage() {
+    public String getPrePage() {
         return prePage;
     }
 
-    public void setPrePage(int prePage) {
+    public void setPrePage(String prePage) {
         this.prePage = prePage;
     }
 
-    public int getNextPage() {
+    public String getNextPage() {
         return nextPage;
     }
 
-    public void setNextPage(int nextPage) {
+    public void setNextPage(String nextPage) {
         this.nextPage = nextPage;
     }
 
@@ -152,43 +152,43 @@ public class HomeListBean {
         this.hasNextPage = hasNextPage;
     }
 
-    public int getNavigatePages() {
+    public String getNavigatePages() {
         return navigatePages;
     }
 
-    public void setNavigatePages(int navigatePages) {
+    public void setNavigatePages(String navigatePages) {
         this.navigatePages = navigatePages;
     }
 
-    public int getNavigateFirstPage() {
+    public String getNavigateFirstPage() {
         return navigateFirstPage;
     }
 
-    public void setNavigateFirstPage(int navigateFirstPage) {
+    public void setNavigateFirstPage(String navigateFirstPage) {
         this.navigateFirstPage = navigateFirstPage;
     }
 
-    public int getNavigateLastPage() {
+    public String getNavigateLastPage() {
         return navigateLastPage;
     }
 
-    public void setNavigateLastPage(int navigateLastPage) {
+    public void setNavigateLastPage(String navigateLastPage) {
         this.navigateLastPage = navigateLastPage;
     }
 
-    public int getLastPage() {
+    public String getLastPage() {
         return lastPage;
     }
 
-    public void setLastPage(int lastPage) {
+    public void setLastPage(String lastPage) {
         this.lastPage = lastPage;
     }
 
-    public int getFirstPage() {
+    public String getFirstPage() {
         return firstPage;
     }
 
-    public void setFirstPage(int firstPage) {
+    public void setFirstPage(String firstPage) {
         this.firstPage = firstPage;
     }
 
@@ -229,7 +229,7 @@ public class HomeListBean {
          * email : null
          */
 
-        private int id;
+        private String id;
         private Object password;
         private String name;
         private String companyName;
@@ -237,7 +237,7 @@ public class HomeListBean {
         private Object province;
         private Object city;
         private String departmentName;
-        private int departmentId;
+        private String departmentId;
         private String tel;
         private String industry;
         private String status;
@@ -246,12 +246,20 @@ public class HomeListBean {
         private String pwd;
         private Object token;
         private Object email;
+        private String grade;
 
-        public int getId() {
+        public String getGrade() {
+            return grade;
+        }
+
+        public void setGrade(String grade) {
+            this.grade = grade;
+        }
+        public String getId() {
             return id;
         }
 
-        public void setId(int id) {
+        public void setId(String id) {
             this.id = id;
         }
 
@@ -311,11 +319,11 @@ public class HomeListBean {
             this.departmentName = departmentName;
         }
 
-        public int getDepartmentId() {
+        public String getDepartmentId() {
             return departmentId;
         }
 
-        public void setDepartmentId(int departmentId) {
+        public void setDepartmentId(String departmentId) {
             this.departmentId = departmentId;
         }
 

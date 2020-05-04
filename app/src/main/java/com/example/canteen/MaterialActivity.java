@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,12 +22,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemChildClickListener;
-import com.example.canteen.bean.FoodListBean;
+import com.chad.library.adapter.base.listener.OnItemClickListener;
+import com.chad.library.adapter.base.listener.OnItemLongClickListener;
+import com.example.canteen.adapter.MaterialAdapter;
 import com.example.canteen.bean.MaterialBean;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -51,7 +53,7 @@ public class MaterialActivity extends AppCompatActivity {
     QMUIRoundButton ok;
     EditText name, rmb;
     Context context;
-    MaterialAdapter adapter;
+    MaterialAdapter adapter = new MaterialAdapter(R.layout.item_material);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +63,22 @@ public class MaterialActivity extends AppCompatActivity {
         context = this;
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
-        adapter.setOnItemChildClickListener(new OnItemChildClickListener() {
-            @Override
-            public void onItemChildClick(@NonNull BaseQuickAdapter adapters, @NonNull View view, int position) {
-                if (view.getId() == R.id.del) {
-                    MaterialDel materialDel = new MaterialDel(adapter.getData().get(position).getId(), position);
-                    materialDel.execute();
-                } else {
 
-                }
+
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(@NonNull BaseQuickAdapter<?, ?> adapters, @NonNull View view, int position) {
+                showPopFood(adapter.getData().get(position).getId());
+            }
+        });
+
+        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(@NonNull BaseQuickAdapter adapters, @NonNull View view, int position) {
+                MaterialDel materialDel = new MaterialDel(adapter.getData().get(position).getId(), position);
+                materialDel.execute();
+
+                return false;
             }
         });
 
@@ -80,7 +89,7 @@ public class MaterialActivity extends AppCompatActivity {
 
     @OnClick(R.id.add_item)
     public void onViewClicked() {
-        showPopFood();
+        showPopFood("");
     }
 
 
@@ -89,7 +98,7 @@ public class MaterialActivity extends AppCompatActivity {
         view = LayoutInflater.from(context).inflate(R.layout.pop_food_list_add, null);
         ok = view.findViewById(R.id.ok);
         name = view.findViewById(R.id.name);
-        rmb = view.findViewById(R.id.rmb);
+        rmb = view.findViewById(R.id.price);
         popupWindow.setWidth(LinearLayout.LayoutParams.MATCH_PARENT);// 设置弹出窗口的宽
         popupWindow.setHeight(LinearLayout.LayoutParams.WRAP_CONTENT);// 设置弹出窗口的高
         popupWindow.setContentView(view);
@@ -97,13 +106,7 @@ public class MaterialActivity extends AppCompatActivity {
         popupWindow.setOutsideTouchable(true);//点击空白键取消
         popupWindow.setFocusable(true); //点击返回键取消
         popupWindow.setBackgroundDrawable(new BitmapDrawable());
-        ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MaterialSave materialSave = new MaterialSave(name.getText().toString(), rmb.getText().toString());
-                materialSave.execute();
-            }
-        });
+
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
@@ -115,7 +118,18 @@ public class MaterialActivity extends AppCompatActivity {
     }
 
 
-    private void showPopFood() {
+    private void showPopFood(String id ) {
+
+        ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String a= name.getText().toString();
+                String b = rmb.getText().toString();
+                MaterialSave materialSave = new MaterialSave(name.getText().toString(), rmb.getText().toString(),id);
+                materialSave.execute();
+                popupWindow.dismiss();
+            }
+        });
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.alpha = 0.5f;
         getWindow().setAttributes(lp);
@@ -196,25 +210,25 @@ public class MaterialActivity extends AppCompatActivity {
 
 
     class MaterialSave extends AsyncTask<Void, Void, String> {
-        String materialName, materialPrice;
+        String materialName, materialPrice,id;
 
-        public MaterialSave(String materialName, String materialPrice) {
-
+        public MaterialSave(String materialName, String materialPrice,String id) {
             this.materialName = materialName;
             this.materialPrice = materialPrice;
+            this.id = id;
         }
 
         @Override
         protected String doInBackground(Void... voids) {
-            String s = "";
+            String s = "" ,url;
             OkHttpClient okHttpClient = new OkHttpClient();
-            MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
-            urlBuilder.setType(MultipartBody.FORM);
-            urlBuilder.addFormDataPart("ingredientsName", materialName);
-            urlBuilder.addFormDataPart("ingredientsPrice", materialPrice);
-            urlBuilder.addFormDataPart("userId", Api.TOKEN);
-
-            Request request = new Request.Builder().url(Api.BASEURL + Api.FOODSAVE).post(urlBuilder.build()).build();
+            if(!id.equals("")){
+              url =   Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName="+materialName+"&ingredientsPrice=" +materialPrice +"&id=" +id ;
+            }else{
+                url =   Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName="+materialName+"&ingredientsPrice=" +materialPrice ;
+            }
+            Log.e("url",url);
+            Request request = new Request.Builder().url(url).build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -227,7 +241,7 @@ public class MaterialActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if (s.equals(Api.SUCCESS)) {
+            if (s.equals("insertSuccess")||s.equals(Api.SUCCESS)) {
                 Toast.makeText(context, "保存成功", Toast.LENGTH_LONG).show();
                 GetList getList = new GetList();
                 getList.execute();

@@ -26,9 +26,20 @@
         app:layout_constraintStart_toStartOf="@id/tv_name"
         android:paddingStart="20dp"
         android:textColor="@color/yellow"
-        android:text="9.7分"
+        android:text=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tv_df"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="打分"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginRight="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+       app:layout_constraintEnd_toStartOf="@id/del" />
+
     <TextView
         android:id="@+id/del"
         android:layout_width="wrap_content"

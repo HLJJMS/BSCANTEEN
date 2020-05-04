@@ -22,7 +22,7 @@ public class LoginBean {
      * email : null
      */
 
-    private int id;
+    private String id;
     private Object password;
     private String name;
     private String companyName;
@@ -30,7 +30,7 @@ public class LoginBean {
     private Object province;
     private Object city;
     private String departmentName;
-    private int departmentId;
+    private String departmentId;
     private String tel;
     private String industry;
     private String status;
@@ -40,11 +40,11 @@ public class LoginBean {
     private String token;
     private Object email;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -104,11 +104,11 @@ public class LoginBean {
         this.departmentName = departmentName;
     }
 
-    public int getDepartmentId() {
+    public String getDepartmentId() {
         return departmentId;
     }
 
-    public void setDepartmentId(int departmentId) {
+    public void setDepartmentId(String departmentId) {
         this.departmentId = departmentId;
     }
 

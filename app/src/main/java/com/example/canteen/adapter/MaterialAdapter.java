@@ -1,7 +1,8 @@
-package com.example.canteen;
+package com.example.canteen.adapter;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
+import com.example.canteen.R;
 import com.example.canteen.bean.MaterialBean;
 
 public class MaterialAdapter extends BaseQuickAdapter<MaterialBean.ListBean, BaseViewHolder> {
