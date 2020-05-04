@@ -37,6 +37,8 @@ import com.chad.library.adapter.base.listener.OnItemLongClickListener;
 import com.example.canteen.adapter.FoodAdapter;
 import com.example.canteen.bean.FoodListBean;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
@@ -49,9 +51,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class FoodListActivity extends AppCompatActivity {
@@ -112,19 +116,19 @@ public class FoodListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        foodAdapter.addChildClickViewIds(R.id.del,R.id.tv_df);
-foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
-    @Override
-    public void onItemChildClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
-        if(view.getId()==R.id.tv_df){
-            showPopDF(foodAdapter.getData().get(position).getId().toString());
-        }else if (view.getId()==R.id.del){
-            FoodDel foodDel = new FoodDel(foodAdapter.getData().get(position).getId(), position);
-            foodDel.execute();
+        foodAdapter.addChildClickViewIds(R.id.del, R.id.tv_df);
+        foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(@NonNull BaseQuickAdapter adapter, @NonNull View view, int position) {
+                if (view.getId() == R.id.tv_df) {
+                    showPopDF(foodAdapter.getData().get(position).getId().toString());
+                } else if (view.getId() == R.id.del) {
+                    FoodDel foodDel = new FoodDel(foodAdapter.getData().get(position).getId(), position);
+                    foodDel.execute();
 
-        }
-    }
-});
+                }
+            }
+        });
 
 
     }
@@ -270,7 +274,7 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
         }
         if (requestCode == 0) {
             uri = data.getData();
-            Glide.with(this).load(uri).into(img);
+            Glide.with(this).load(uri.toString()).into(img);
 
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -287,7 +291,6 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
             Toast.makeText(FoodListActivity.this, "亲，木有文件管理器啊-_-!!", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
     class GetList extends AsyncTask<Void, Void, String> {
@@ -375,7 +378,7 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
             MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
             urlBuilder.addFormDataPart("foodName", foodName);
             urlBuilder.addFormDataPart("foodPrice", foodPrice);
-            urlBuilder.addFormDataPart("foodImg", Api.UPLOAD + fileName);
+            urlBuilder.addFormDataPart("foodImg", fileName);
             urlBuilder.addFormDataPart("userId", Api.TOKEN);
 
             Request request = new Request.Builder().url(Api.BASEURL + Api.FOODSAVE).post(urlBuilder.build()).build();
@@ -391,7 +394,7 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if (s.equals(Api.SUCCESS)) {
+            if (s.equals("insertSuccess")) {
                 Toast.makeText(context, "保存成功", Toast.LENGTH_LONG).show();
                 GetList getList = new GetList();
                 getList.execute();
@@ -416,10 +419,11 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
         @Override
         protected String doInBackground(Void... voids) {
             String s = "";
-            OkHttpClient okHttpClient = new OkHttpClient();
+            OkHttpClient okHttpClient = new OkHttpClient();    // 设置文件以及文件上传类型封装
+            RequestBody requestBody = RequestBody.create(MediaType.parse("image/png"), file);
             MultipartBody.Builder urlBuilder = new MultipartBody.Builder();
             urlBuilder.setType(MultipartBody.FORM);
-            urlBuilder.addFormDataPart("foodImg", file.getName());
+            urlBuilder.addFormDataPart("file", file.getName(),requestBody);
             Request request = new Request.Builder().url(Api.BASEURL + Api.UPLOAD).post(urlBuilder.build()).build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
@@ -433,11 +437,14 @@ foodAdapter.setOnItemChildClickListener(new OnItemChildClickListener() {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            FoodSave foodSave = new FoodSave(file.getName(), foodName, rmd.getText().toString());
-            foodSave.execute();
+            JsonObject returnData = new JsonParser().parse(s).getAsJsonObject();
+            String data = returnData.get("dataFile").getAsString();
+            if (null != data) {
+                FoodSave foodSave = new FoodSave(uri.toString(), foodName, rmd.getText().toString());
+                foodSave.execute();
+            }
         }
     }
-
 
 
     class DFnet extends AsyncTask<Void, Void, String> {
