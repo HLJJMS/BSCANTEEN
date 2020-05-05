@@ -63,26 +63,28 @@ public class MaterialActivity extends AppCompatActivity {
         context = this;
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
-        if(Api.TYPE.equals(Api.ADMIN)){
+        if (Api.TYPE.equals(Api.ADMIN)) {
             addItem.setVisibility(View.VISIBLE);
         }
 
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(@NonNull BaseQuickAdapter<?, ?> adapters, @NonNull View view, int position) {
-                showPopFood(adapter.getData().get(position).getId());
+                if(Api.TYPE.equals(Api.ADMIN)){
+                    showPopFood(adapter.getData().get(position).getId());
+                }
             }
         });
-
-        adapter.setOnItemLongClickListener(new OnItemLongClickListener() {
+        adapter.addChildClickViewIds(R.id.del);
+        adapter.setOnItemChildClickListener(new OnItemChildClickListener() {
             @Override
-            public boolean onItemLongClick(@NonNull BaseQuickAdapter adapters, @NonNull View view, int position) {
+            public void onItemChildClick(@NonNull BaseQuickAdapter adapters, @NonNull View view, int position) {
                 MaterialDel materialDel = new MaterialDel(adapter.getData().get(position).getId(), position);
                 materialDel.execute();
 
-                return false;
             }
         });
+
 
         setPopwindow();
         GetList getList = new GetList();
@@ -120,14 +122,14 @@ public class MaterialActivity extends AppCompatActivity {
     }
 
 
-    private void showPopFood(String id ) {
+    private void showPopFood(String id) {
 
         ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String a= name.getText().toString();
+                String a = name.getText().toString();
                 String b = rmb.getText().toString();
-                MaterialSave materialSave = new MaterialSave(name.getText().toString(), rmb.getText().toString(),id);
+                MaterialSave materialSave = new MaterialSave(name.getText().toString(), rmb.getText().toString(), id);
                 materialSave.execute();
                 popupWindow.dismiss();
             }
@@ -212,9 +214,9 @@ public class MaterialActivity extends AppCompatActivity {
 
 
     class MaterialSave extends AsyncTask<Void, Void, String> {
-        String materialName, materialPrice,id;
+        String materialName, materialPrice, id;
 
-        public MaterialSave(String materialName, String materialPrice,String id) {
+        public MaterialSave(String materialName, String materialPrice, String id) {
             this.materialName = materialName;
             this.materialPrice = materialPrice;
             this.id = id;
@@ -222,14 +224,14 @@ public class MaterialActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            String s = "" ,url;
+            String s = "", url;
             OkHttpClient okHttpClient = new OkHttpClient();
-            if(!id.equals("")){
-              url =   Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName="+materialName+"&ingredientsPrice=" +materialPrice +"&id=" +id ;
-            }else{
-                url =   Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName="+materialName+"&ingredientsPrice=" +materialPrice ;
+            if (!id.equals("")) {
+                url = Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName=" + materialName + "&ingredientsPrice=" + materialPrice + "&id=" + id;
+            } else {
+                url = Api.BASEURL + Api.MATERIALSAVE + "?ingredientsName=" + materialName + "&ingredientsPrice=" + materialPrice;
             }
-            Log.e("url",url);
+            Log.e("url", url);
             Request request = new Request.Builder().url(url).build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
@@ -243,7 +245,7 @@ public class MaterialActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if (s.equals("insertSuccess")||s.equals(Api.SUCCESS)) {
+            if (s.equals("insertSuccess") || s.equals(Api.SUCCESS)) {
                 Toast.makeText(context, "保存成功", Toast.LENGTH_LONG).show();
                 GetList getList = new GetList();
                 getList.execute();
