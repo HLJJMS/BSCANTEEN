@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -168,12 +169,14 @@ public class LoginActivity extends AppCompatActivity {
                 if (isLogin) {
                     isLogin = false;
                     tvType.setText("登录");
+                    password.setInputType(InputType.TYPE_CLASS_NUMBER);
                     llType.setVisibility(View.VISIBLE);
                     password.setHint("请输入名字");
                 } else {
                     isLogin = true;
                     llType.setVisibility(View.GONE);
                     tvType.setText("注册");
+                    password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     password.setHint("请输入密码");
                 }
                 break;
@@ -246,6 +249,8 @@ public class LoginActivity extends AppCompatActivity {
                     isLogin = true;
                     llType.setVisibility(View.GONE);
                     tvType.setText("注册");
+                    password.setHint("请输入密码");
+                    password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     username.setText("");
                     password.setText("");
                     Toast.makeText(context, "成功，请重新登录", Toast.LENGTH_LONG).show();

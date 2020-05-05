@@ -25,6 +25,7 @@
         android:layout_marginRight="10dp"
         android:text="✚"
         android:textColor="@color/white"
+        android:visibility="gone"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="@id/title"
         app:layout_constraintRight_toRightOf="parent"

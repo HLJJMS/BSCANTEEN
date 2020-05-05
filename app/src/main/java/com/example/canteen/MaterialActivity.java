@@ -63,7 +63,9 @@ public class MaterialActivity extends AppCompatActivity {
         context = this;
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
-
+        if(Api.TYPE.equals(Api.ADMIN)){
+            addItem.setVisibility(View.VISIBLE);
+        }
 
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override

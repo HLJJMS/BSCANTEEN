@@ -32,7 +32,6 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-
         android:hint="请输入密码"
         android:imeActionLabel="@string/action_sign_in_short"
         android:imeOptions="actionDone"
