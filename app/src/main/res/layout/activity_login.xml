@@ -48,6 +48,7 @@
         android:gravity="center"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
+        android:layout_marginTop="50dp"
         android:text="登录"
         android:textColor="@color/white"
         android:textSize="18sp"
@@ -61,13 +62,13 @@
 
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/ll_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/password"
         tools:ignore="MissingConstraints">
 
@@ -122,6 +123,46 @@
             tools:ignore="MissingConstraints" />
 
     </LinearLayout>
+
+    <RadioGroup
+        android:id="@+id/radio"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/ll_type"
+        tools:ignore="MissingConstraints">
+         <RadioButton
+             android:id="@+id/radio1"
+             android:text="一食堂"
+             android:textColor="@color/yellow"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"/>
+        <RadioButton
+            android:text="二食堂"
+            android:id="@+id/radio2"
+            android:textColor="@color/yellow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:text="三食堂"
+            android:id="@+id/radio3"
+            android:textColor="@color/yellow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:text="四食堂"
+            android:id="@+id/radio4"
+            android:textColor="@color/yellow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:id="@+id/radio5"
+            android:text="五食堂"
+            android:textColor="@color/yellow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RadioGroup>
 
     <ProgressBar
         android:id="@+id/loading"

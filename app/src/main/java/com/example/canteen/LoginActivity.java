@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,9 +27,6 @@ import java.io.IOException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -46,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     LinearLayout llType;
     @BindView(R.id.tv_type)
     TextView tvType;
+    @BindView(R.id.radio)
+    RadioGroup radio;
     private long mBackPressed;
     @BindView(R.id.username)
     EditText username;
@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
     String tel, pws, status;
     Context context;
     int type = 0;
-
+   String depratmentId = "1";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +74,29 @@ public class LoginActivity extends AppCompatActivity {
         context = this;
         editor.putBoolean("save", false);
         editor.commit();
+
+        radio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.radio1:
+                        depratmentId="1";
+                        break;
+                    case R.id.radio2:
+                        depratmentId="2";
+                        break;
+                    case R.id.radio3:
+                        depratmentId="3";
+                        break;
+                    case R.id.radio4:
+                        depratmentId="4";
+                        break;
+                    case R.id.radio5:
+                        depratmentId="5";
+                        break;
+                }
+            }
+        });
 
     }
 
@@ -172,12 +195,14 @@ public class LoginActivity extends AppCompatActivity {
                     password.setInputType(InputType.TYPE_CLASS_NUMBER);
                     llType.setVisibility(View.VISIBLE);
                     password.setHint("请输入名字");
+                    radio.setVisibility(View.VISIBLE);
                 } else {
                     isLogin = true;
                     llType.setVisibility(View.GONE);
                     tvType.setText("注册");
                     password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     password.setHint("请输入密码");
+                    radio.setVisibility(View.GONE);
                 }
                 break;
         }
@@ -188,10 +213,10 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            String s = "",url=Api.BASEURL + Api.LOGIN+"?tel="+tel+"&pwd="+pws;
+            String s = "", url = Api.BASEURL + Api.LOGIN + "?tel=" + tel + "&pwd=" + pws;
             OkHttpClient okHttpClient = new OkHttpClient();
             Request request = new Request.Builder().url(url).build();
-            Log.e("结果",url);
+            Log.e("结果", url);
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -204,7 +229,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if(!s.equals("")){
+            if (!s.equals("")) {
                 LoginBean bean = new Gson().fromJson(s, LoginBean.class);
                 editor.putString("user", username.getText().toString());
                 editor.putString("password", password.getText().toString());
@@ -216,8 +241,8 @@ public class LoginActivity extends AppCompatActivity {
                 editor.commit();
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 finish();
-            }else{
-                Toast.makeText(context,"账号密码错误",Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "账号密码错误", Toast.LENGTH_LONG).show();
             }
 
         }
@@ -230,8 +255,8 @@ public class LoginActivity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE+"?tel="+tel+"&pwd="+pws+"&status="+status).build();
-            Log.e("url" ,Api.BASEURL + Api.REGISTE+"?tel="+tel+"&name="+pws+"&status="+status );
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&pwd=" + pws + "&status=" + status + "&depramentId=" + depratmentId).build();
+            Log.e("url", Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&name=" + pws + "&status=" + status);
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -250,6 +275,7 @@ public class LoginActivity extends AppCompatActivity {
                     llType.setVisibility(View.GONE);
                     tvType.setText("注册");
                     password.setHint("请输入密码");
+                    radio.setVisibility(View.GONE);
                     password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     username.setText("");
                     password.setText("");

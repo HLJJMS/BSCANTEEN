@@ -63,7 +63,7 @@ public class FoodListActivity extends AppCompatActivity {
     @BindView(R.id.recycler)
     RecyclerView recycler;
     @BindView(R.id.ok)
-    QMUIRoundButton add;
+    QMUIRoundButton  add;
     ImageView img;
     TextView foodName;
     EditText name;
