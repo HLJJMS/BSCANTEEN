@@ -14,7 +14,7 @@ public class MaterialAdapter extends BaseQuickAdapter<MaterialBean.ListBean, Bas
     @Override
     protected void convert(BaseViewHolder baseViewHolder, MaterialBean.ListBean listBean) {
         baseViewHolder.setText(R.id.name,listBean.getIngredientsName());
-        baseViewHolder.setText(R.id.rmb,listBean.getIngredientsPrice());
+        baseViewHolder.setText(R.id.rmb,listBean.getIngredientsPrice()+"元");
         if(Api.TYPE.equals(Api.ADMIN)){
             baseViewHolder.setVisible(R.id.del,true);
         }else{

@@ -192,7 +192,8 @@ public class LoginActivity extends AppCompatActivity {
                 if (isLogin) {
                     isLogin = false;
                     tvType.setText("登录");
-                    password.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    login.setText("注册");
+                    password.setInputType(InputType.TYPE_CLASS_TEXT);
                     llType.setVisibility(View.VISIBLE);
                     password.setHint("请输入名字");
                     radio.setVisibility(View.VISIBLE);
@@ -200,6 +201,7 @@ public class LoginActivity extends AppCompatActivity {
                     isLogin = true;
                     llType.setVisibility(View.GONE);
                     tvType.setText("注册");
+                    login.setText("登陆");
                     password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     password.setHint("请输入密码");
                     radio.setVisibility(View.GONE);
@@ -255,8 +257,8 @@ public class LoginActivity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&pwd=" + pws + "&status=" + status + "&depramentId=" + depratmentId).build();
-            Log.e("url", Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&name=" + pws + "&status=" + status);
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&pwd=" + pws + "&status=" + status + "&departmentName=" + depratmentId).build();
+            Log.e("url", Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&name=" + pws + "&status=" + status+"&departmentName=" + depratmentId);
             try {
                 Response response = okHttpClient.newCall(request).execute();
                 s = response.body().string();
@@ -276,6 +278,7 @@ public class LoginActivity extends AppCompatActivity {
                     tvType.setText("注册");
                     password.setHint("请输入密码");
                     radio.setVisibility(View.GONE);
+                    login.setText("登陆");
                     password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     username.setText("");
                     password.setText("");
