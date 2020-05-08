@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:paddingTop="8dp"
-                android:text="Android Studio"
+                android:text=""
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 android:textColor="@color/white"
                 app:layout_constraintTop_toBottomOf="@id/imageView" />
