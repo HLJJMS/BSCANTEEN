@@ -113,7 +113,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            android:text="厨师"
+            android:text="商户"
             android:textColor="@color/yellow"
             android:textSize="20dp"
             app:layout_constraintRight_toRightOf="parent"

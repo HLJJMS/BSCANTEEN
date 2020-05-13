@@ -126,6 +126,7 @@ public class LoginActivity extends AppCompatActivity {
                 teacher.setBackgroundResource(R.drawable.edit_back);
                 cooker.setBackgroundResource(R.drawable.edit_back);
                 status = Api.STUDENT;
+                radio.setVisibility(View.INVISIBLE);
                 break;
             case 1:
                 studen.setTextColor(txtFalse);
@@ -135,6 +136,7 @@ public class LoginActivity extends AppCompatActivity {
                 teacher.setBackgroundResource(R.drawable.edit_back_solid);
                 cooker.setBackgroundResource(R.drawable.edit_back);
                 status = Api.TEACHER;
+                radio.setVisibility(View.INVISIBLE);
                 break;
             case 2:
                 studen.setTextColor(txtFalse);
@@ -144,6 +146,7 @@ public class LoginActivity extends AppCompatActivity {
                 teacher.setBackgroundResource(R.drawable.edit_back);
                 cooker.setBackgroundResource(R.drawable.edit_back_solid);
                 status = Api.COOKER;
+                radio.setVisibility(View.VISIBLE);
                 break;
         }
     }
@@ -257,7 +260,7 @@ public class LoginActivity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             String s = "";
             OkHttpClient okHttpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&pwd=" + pws + "&status=" + status + "&departmentName=" + depratmentId).build();
+            Request request = new Request.Builder().url(Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&name=" + pws + "&status=" + status + "&departmentId=" + depratmentId).build();
             Log.e("url", Api.BASEURL + Api.REGISTE + "?tel=" + tel + "&name=" + pws + "&status=" + status+"&departmentName=" + depratmentId);
             try {
                 Response response = okHttpClient.newCall(request).execute();
