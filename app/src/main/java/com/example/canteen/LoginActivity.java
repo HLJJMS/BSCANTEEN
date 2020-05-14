@@ -156,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.login:
                 if (isLogin) {
-                    if (username.getText().equals("") || password.getText().equals("")) {
+                    if (username.getText().toString().equals("") || password.getText().toString().equals("")) {
                         Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
                     } else {
                         pws = password.getText().toString();
@@ -167,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } else {
                     //注册
-                    if (username.getText().equals("") || password.getText().equals("")) {
+                    if (username.getText().toString().equals("") || password.getText().toString().equals("")) {
                         Toast.makeText(LoginActivity.this, "账号密码不能为空", Toast.LENGTH_LONG).show();
                     } else {
                         pws = password.getText().toString();
